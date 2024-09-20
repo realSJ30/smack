@@ -16,6 +16,7 @@ export const loginSchema = z.object({
 })
 
 export const signUpSchema = z.object({
+    name: z.string().min(2, { message: "Name must be more than 2 characters." }),
     email: emailZod,
     password: z.string().min(8, { message: "Password too weak." }),
     confirmPassword: z.string().min(8, { message: "Password too weak." })
@@ -23,3 +24,7 @@ export const signUpSchema = z.object({
     message: "Passwords don't match",
     path: ["confirmPassword"],
 });
+
+export const createWorkspaceSchema = z.object({
+    name: z.string().min(3, { message: "Workspace must be more than 3 characters." }),
+})

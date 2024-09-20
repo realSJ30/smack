@@ -19,12 +19,13 @@ import { Separator } from "@/components/ui/separator";
 import { loginSchema } from "@/lib/schemas";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { TriangleAlert } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { z } from "zod";
 import { SignInFlow } from "../types";
-import { useState } from "react";
 
 interface SignInCardProps {
   setState: (state: SignInFlow) => void;
@@ -33,6 +34,7 @@ interface SignInCardProps {
 export const SignInCard = ({ setState }: SignInCardProps) => {
   const { signIn } = useAuthActions();
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState("");
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -47,7 +49,15 @@ export const SignInCard = ({ setState }: SignInCardProps) => {
     signIn(value).finally(() => setPending(false));
   };
 
-  const onSubmit = (values: z.infer<typeof loginSchema>) => {};
+  const onSubmit = (values: z.infer<typeof loginSchema>) => {
+    setPending(true);
+    const { email, password } = values;
+    signIn("password", { email, password, flow: "signIn" })
+      .catch(() => {
+        setError("Invalid email or password!");
+      })
+      .finally(() => setPending(false));
+  };
 
   return (
     <Card className="w-full h-full p-8">
@@ -57,6 +67,12 @@ export const SignInCard = ({ setState }: SignInCardProps) => {
           Use your email or another service to continue
         </CardDescription>
       </CardHeader>
+      {!!error && (
+        <div className="bg-destructive/15 p-3 rounded-md flex items-center gap-x-2 text-sm text-destructive mb-6">
+          <TriangleAlert className="size-4" />
+          <p>{error}</p>
+        </div>
+      )}
       <CardContent className="space-y-5 px-0 pb-0">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2.5">

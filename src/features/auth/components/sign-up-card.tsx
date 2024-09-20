@@ -18,12 +18,13 @@ import { Separator } from "@/components/ui/separator";
 import { signUpSchema } from "@/lib/schemas";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { TriangleAlert } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { z } from "zod";
 import { SignInFlow } from "../types";
-import { useState } from "react";
 
 interface SignUpCardProps {
   setState: (state: SignInFlow) => void;
@@ -32,10 +33,12 @@ interface SignUpCardProps {
 export const SignUpCard = ({ setState }: SignUpCardProps) => {
   const { signIn } = useAuthActions();
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState("");
 
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
+      name: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -47,7 +50,15 @@ export const SignUpCard = ({ setState }: SignUpCardProps) => {
     signIn(value).finally(() => setPending(false));
   };
 
-  const onSubmit = (values: z.infer<typeof signUpSchema>) => {};
+  const onSubmit = (values: z.infer<typeof signUpSchema>) => {
+    setPending(true);
+    const { email, password, name } = values;
+    signIn("password", { email, password, name, flow: "signUp" })
+      .catch(() => {
+        setError("Something went wrong!");
+      })
+      .finally(() => setPending(false));
+  };
 
   return (
     <Card className="w-full h-full p-8">
@@ -57,9 +68,31 @@ export const SignUpCard = ({ setState }: SignUpCardProps) => {
           Use your email or another service to continue
         </CardDescription>
       </CardHeader>
+      {!!error && (
+        <div className="bg-destructive/15 p-3 rounded-md flex items-center gap-x-2 text-sm text-destructive mb-6">
+          <TriangleAlert className="size-4" />
+          <p>{error}</p>
+        </div>
+      )}
       <CardContent className="space-y-5 px-0 pb-0">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2.5">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      disabled={pending}
+                      placeholder="Your Name"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="email"
