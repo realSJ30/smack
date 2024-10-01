@@ -28,3 +28,8 @@ export const signUpSchema = z.object({
 export const createWorkspaceSchema = z.object({
     name: z.string().min(3, { message: "Workspace must be more than 3 characters." }),
 })
+
+export const createChannelSchema = z.object({
+    name: z.string().min(1, { message: "Channel must be more than 1 character." }),
+})
+

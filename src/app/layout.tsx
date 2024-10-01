@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 import "./globals.css";
+import JoatiProvider from "@/components/custom/jotai-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,9 +26,11 @@ export default function RootLayout({
       <html lang="en" className={inter.className}>
         <body>
           <ConvexClientProvider>
-            <Toaster />
-            <Modals />
-            {children}
+            <JoatiProvider>
+              <Toaster />
+              <Modals />
+              {children}
+            </JoatiProvider>
           </ConvexClientProvider>
         </body>
       </html>
